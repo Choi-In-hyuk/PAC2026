@@ -53,7 +53,7 @@ def main():
     base_link = sys.argv[4] if len(sys.argv) > 4 else None
     tip_link = sys.argv[5] if len(sys.argv) > 5 else None
 
-    with open(urdf_path) as f:
+    with open(urdf_path, 'rb') as f:
         urdf_xml = f.read()
     robot = URDF.from_xml_string(urdf_xml)
     tree = kdl_tree_from_urdf_model(robot)
