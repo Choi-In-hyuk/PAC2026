@@ -1,0 +1,999 @@
+{
+ "schema_version": "0.1-transfer",
+ "unit": "m",
+ "frame_id": "W: 입력 STL 좌표계(단위 m 로 변환). points, normals, tool_positions, tool_rotations 모두 W 표현",
+ "tool_frame_id": "C: 패드 접촉면 중심이 원점, z_C 는 공구축 방향으로 플랜지(로봇) 쪽. tool_rotations = R_W_C (열벡터 규약, p_W = R p_C + t)",
+ "T_B_W": [
+  [
+   1.0,
+   0.0,
+   0.0,
+   -0.7435003760768949
+  ],
+  [
+   0.0,
+   1.0,
+   0.0,
+   -0.19499529698288995
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   -0.384705836401254
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ]
+ ],
+ "T_W_B": [
+  [
+   1.0,
+   0.0,
+   0.0,
+   0.7435003760768949
+  ],
+  [
+   0.0,
+   1.0,
+   0.0,
+   0.19499529698288995
+  ],
+  [
+   0.0,
+   0.0,
+   1.0,
+   0.384705836401254
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ]
+ ],
+ "T_L_C": [
+  [
+   1.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   -1.0,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   0.0,
+   -1.0,
+   0.11
+  ],
+  [
+   0.0,
+   0.0,
+   0.0,
+   1.0
+  ]
+ ],
+ "robot_link_L": "panda_link8 (flange)",
+ "robot_check_mode": "rtb_panda",
+ "robot_model": "Robotics Toolbox for Python rtb.models.Panda (Franka Panda)",
+ "target_rows": "tool_pose_valid & accessibility 인 행이 방문 목표. 행 순서는 방문 순서가 아니다",
+ "status_codes": {
+  "0": "UNCHECKED",
+  "1": "FEASIBLE",
+  "2": "TOOL_INFEASIBLE",
+  "3": "ROBOT_INFEASIBLE",
+  "4": "INVALID_GEOMETRY",
+  "5": "NOT_WORK_SURFACE"
+ },
+ "contact_modes": {
+  "0": "미선택",
+  "1": "중심 접촉",
+  "2": "가장자리 접촉"
+ },
+ "input": "/home/kjy12/work/prototype/car door.stl",
+ "input_sha256": "9c95c45fba1b23cea0daec01af0ca791966f615e4e63062b7a5e590f20bfb793",
+ "config_hash": "f3b6e0f396fc3ca0",
+ "random_seed": 0,
+ "package_versions": {
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "trimesh": "5.1.1",
+  "libigl": "2.6.3",
+  "numpy-stl": "4.0.1",
+  "pymeshlab": "2025.7.post1",
+  "rtree": "1.4.1",
+  "networkx": "3.7",
+  "PyYAML": "6.0.3",
+  "roboticstoolbox-python": "1.4.4",
+  "python-fcl": "0.7.0.11"
+ },
+ "assumptions": [
+  "tool.R_disc = 0.05 m 는 가정값 (디스크 치수 미정)",
+  "mesh.input_unit = m 는 가정값 (STL에 단위 정보 없음, 크기 0.068 x 0.446 x 0.488 기준)",
+  "작업 면 = +x 방향 바깥 곡면 은 가정값 (검토 전)",
+  "공구 형상(디스크 두께 10 mm, 몸체 반지름 30 mm x 높이 100 mm 원통), delta_contact 0.5 mm, 패드 압입량(중심 0.5 mm / 가장자리 1 mm), body_clearance 2 mm, 가장자리 alpha 5~45도는 가정값",
+  "로봇 fixture: 베이스 = door 작업면 중심 + (0.7, 0, 0) m, 도달 0.3~0.85 m, 공구축-베이스 방향 60도, 병합 가중치는 가정값",
+  "Panda 베이스 = door 작업면 중심 + (0.7, 0, 0) m, 회전 없음 / 공구는 panda_link8 에 직접 장착, 플랜지→패드 면 0.11 m, z 축 반전 / IK·특이점 기준값은 가정값"
+ ],
+ "work_area_m2": 0.14381948496940014,
+ "tool_cell": {
+  "R_disc": 0.05,
+  "disc_thickness": 0.01,
+  "body_radius": 0.03,
+  "body_length": 0.1,
+  "delta_contact": 0.0005,
+  "body_clearance": 0.002,
+  "contact_modes": [
+   "center",
+   "edge"
+  ],
+  "edge_alpha_deg": {
+   "min": 5.0,
+   "max": 45.0,
+   "coarse_step": 10.0,
+   "fine_step": 5.0
+  },
+  "elasticity_distance": {
+   "center": 0.0005,
+   "edge": 0.001
+  },
+  "flange_to_pad": 0.11,
+  "base_mode": "offset_from_work_centroid",
+  "base_offset": [
+   0.7,
+   0.0,
+   0.0
+  ],
+  "base_rpy_deg": [
+   0.0,
+   0.0,
+   0.0
+  ],
+  "derived": {}
+ },
+ "provisional": null,
+ "note": "최종 방문점: 유효 접촉 영역 모델(Schneyer 2023 III-C, 패드 압입량 중심 0.0005 m / 가장자리 0.001 m)로 작업 면 전체를 탐욕적으로 덮어 배치하고 각 점을 공구+로봇으로 재검사. 커버리지 기준 point(각 점의 정지 자세 접촉만 셈, 점 사이 쓸고 지나감 가정 없음 → 방문 순서와 무관). 중복 점 제거 안 함(점을 고르는 일은 받는 쪽에 맡김). 빈틈 보완 목표 1, 빈틈 이웃 탐색 켬. 배치 격자 줄 방향: 영역 기본 방향 + 90°. 예상 커버리지·중첩은 metadata['coverage'] (모델 기반 추정, 보장 아님)",
+ "coverage": {
+  "model": "Schneyer 2023 III-C 접촉 영역(elasticity_distance = 중심 0.0005 m / 가장자리 0.001 m, 디스크 R = 0.05 m), IV 래스터 경로 쓸기",
+  "sample_spacing_m": 0.002,
+  "target_overlap": 0.0,
+  "line_step_m": 0.005,
+  "gap_fill_target": 1.0,
+  "covered_fraction_of_feasible_area": 0.9977974844954498,
+  "covered_fraction_of_work_area": 0.9763593380614659,
+  "overlap_fraction_of_covered": 0.9669277880643783,
+  "mean_multiplicity_covered": 8.381427147130038,
+  "overlap_fraction_of_feasible_area": 0.9703240016229063,
+  "multiplicity_area_fraction_of_covered": {
+   "1": 0.0330722119356217,
+   "2": 0.08272325879504343,
+   "3+": 0.8842045292693348
+  },
+  "coverage_credit": "point",
+  "point_contact": {
+   "covered_fraction_of_feasible_area": 0.9977974844954498,
+   "overlap_fraction_of_covered": 0.9669277880643783,
+   "mean_multiplicity_covered": 8.381427147130038
+  },
+  "line_model": {
+   "covered_fraction_of_feasible_area": 0.9978264649626151,
+   "overlap_fraction_of_covered": 0.8607173356105892,
+   "mean_multiplicity_covered": 3.4978935382863647
+  },
+  "interpolation_only_fraction_of_feasible_area": 2.8980467165130697e-05,
+  "credit_count_matches_placement": true,
+  "independent_samples": [
+   {
+    "point_contact": {
+     "covered_fraction_of_feasible_area": 0.9938246549924621,
+     "overlap_fraction_of_covered": 0.967384474781516,
+     "mean_multiplicity_covered": 8.477637516422002
+    },
+    "line_model": {
+     "covered_fraction_of_feasible_area": 0.9945494607445204,
+     "overlap_fraction_of_covered": 0.8590215375837966,
+     "mean_multiplicity_covered": 3.5150477820567674
+    },
+    "interpolation_only_fraction_of_feasible_area": 0.0007248057520584483,
+    "seed": 101,
+    "n_samples": 35955
+   },
+   {
+    "point_contact": {
+     "covered_fraction_of_feasible_area": 0.9944943494639233,
+     "overlap_fraction_of_covered": 0.96846641173449,
+     "mean_multiplicity_covered": 8.448518920152958
+    },
+    "line_model": {
+     "covered_fraction_of_feasible_area": 0.9949290060851926,
+     "overlap_fraction_of_covered": 0.8566257161588233,
+     "mean_multiplicity_covered": 3.496992845537725
+    },
+    "interpolation_only_fraction_of_feasible_area": 0.0004346566212691973,
+    "seed": 202,
+    "n_samples": 35955
+   }
+  ],
+  "evaluation_time_s": 3.6417031101882458,
+  "overlap_breakdown": {
+   "line_edge": {
+    "points": 1794,
+    "new_area_m2": 0.1073516155641433,
+    "redundant_area_m2": 0.5174181470787569,
+    "redundant_other_region_m2": 0.12789554199448222
+   },
+   "line_halved_edge": {
+    "points": 862,
+    "new_area_m2": 0.02789590010225554,
+    "redundant_area_m2": 0.4512943838739424,
+    "redundant_other_region_m2": 0.17780336327005417
+   },
+   "line_halved_center": {
+    "points": 4,
+    "new_area_m2": 0.0007639972640566104,
+    "redundant_area_m2": 0.001759993697303186,
+    "redundant_other_region_m2": 0.0012279956024365411
+   },
+   "line_center": {
+    "points": 7,
+    "new_area_m2": 0.0029879892997397278,
+    "redundant_area_m2": 0.0035879871510930863,
+    "redundant_other_region_m2": 0.0025679908037923764
+   },
+   "gap_fill_edge": {
+    "points": 101,
+    "new_area_m2": 0.0007719972354079878,
+    "redundant_area_m2": 0.04577183608690992,
+    "redundant_other_region_m2": 0.024155913495486233
+   },
+   "gap_search_edge": {
+    "points": 59,
+    "new_area_m2": 0.000631997736758871,
+    "redundant_area_m2": 0.009595965635978055,
+    "redundant_other_region_m2": 0.0041959849737978235
+   },
+   "gap_search_center": {
+    "points": 4,
+    "new_area_m2": 1.599994270275624e-05,
+    "redundant_area_m2": 0.007067974688942567,
+    "redundant_other_region_m2": 0.002711990288117182
+   }
+  },
+  "placement": "uncovered_frontier",
+  "unchecked_faces_relabelled_as_covered": {
+   "faces": 129,
+   "area_m2": 0.003844879066001767
+  },
+  "gap_fill_points": 226,
+  "gap_fill_limit_reached": false,
+  "tool_only_predictions": 1405,
+  "prune": null,
+  "regions": [
+   {
+    "region": 0,
+    "key": "EDGE(chart1,beta5)",
+    "x_dir": [
+     -0.12005243479097408,
+     -0.4853673639490007,
+     -0.8660288303018306
+    ],
+    "contact_width_m": 0.0111779486552121,
+    "layer_offset_m": 0.00558897432760605,
+    "layers": 12,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 1,
+    "key": "EDGE(chart1,beta9)",
+    "x_dir": [
+     -0.29177095918600104,
+     0.9564882158812331,
+     -1.6000515072020855e-05
+    ],
+    "contact_width_m": 0.011045404604936915,
+    "layer_offset_m": 0.005522702302468457,
+    "layers": 45,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 2,
+    "key": "EDGE(chart1,beta5)",
+    "x_dir": [
+     0.16450134281328957,
+     -0.4722359477750772,
+     -0.8659864420656936
+    ],
+    "contact_width_m": 0.010874878552203496,
+    "layer_offset_m": 0.005437439276101748,
+    "layers": 5,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 3,
+    "key": "EDGE(chart1,beta6)",
+    "x_dir": [
+     -3.389458667498275e-05,
+     -1.8158234471552145e-16,
+     -0.9999999994255786
+    ],
+    "contact_width_m": 0.056502217897152165,
+    "layer_offset_m": 0.028251108948576083,
+    "layers": 9,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 4,
+    "key": "EDGE(chart1,beta1)",
+    "x_dir": [
+     0.11324145743801647,
+     -0.4939819696424354,
+     0.862066230625869
+    ],
+    "contact_width_m": 0.011324116146635865,
+    "layer_offset_m": 0.005662058073317933,
+    "layers": 5,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 5,
+    "key": "EDGE(chart1,beta1)",
+    "x_dir": [
+     0.012800929858304371,
+     -0.4998359326817271,
+     0.866025505741575
+    ],
+    "contact_width_m": 0.01089802874978546,
+    "layer_offset_m": 0.00544901437489273,
+    "layers": 4,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 6,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     -0.09065485179069359,
+     5.520413824752056e-17,
+     0.9958823714911352
+    ],
+    "contact_width_m": 0.008753054669111582,
+    "layer_offset_m": 0.004376527334555791,
+    "layers": 4,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 7,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     -0.03811684296120892,
+     5.657326396801038e-17,
+     0.9992732890869598
+    ],
+    "contact_width_m": 0.006325536606780313,
+    "layer_offset_m": 0.0031627683033901566,
+    "layers": 3,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 8,
+    "key": "CENTER",
+    "x_dir": [
+     0.11262985140635715,
+     -0.9880628670279658,
+     0.10510131955716942
+    ],
+    "contact_width_m": 0.09902599027029807,
+    "layer_offset_m": 0.049512995135149035,
+    "layers": 0,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 9,
+    "key": "EDGE(chart0,beta1)",
+    "x_dir": [
+     -0.3222258913724449,
+     -0.44934460959453676,
+     0.8332225973637337
+    ],
+    "contact_width_m": 0.017434036612558157,
+    "layer_offset_m": 0.008717018306279078,
+    "layers": 4,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 10,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     0.4107477785306861,
+     6.093544517327313e-17,
+     0.9117490128495378
+    ],
+    "contact_width_m": 0.03554718399178969,
+    "layer_offset_m": 0.017773591995894844,
+    "layers": 5,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 11,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     3.085521955026939e-17,
+     -0.9912182860923165,
+     -0.13223580950790417
+    ],
+    "contact_width_m": 0.012042271377378844,
+    "layer_offset_m": 0.006021135688689422,
+    "layers": 1,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 12,
+    "key": "EDGE(chart0,beta11)",
+    "x_dir": [
+     0.3733169816319807,
+     0.4982255487670756,
+     0.7825635653293181
+    ],
+    "contact_width_m": 0.03481689912750166,
+    "layer_offset_m": 0.01740844956375083,
+    "layers": 0,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 13,
+    "key": "EDGE(chart0,beta4)",
+    "x_dir": [
+     -0.4570989188839824,
+     0.573479488728201,
+     -0.679839579873911
+    ],
+    "contact_width_m": 0.009537826634986812,
+    "layer_offset_m": 0.004768913317493406,
+    "layers": 4,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 14,
+    "key": "CENTER",
+    "x_dir": [
+     -0.8426658260833839,
+     0.41455347222820316,
+     -0.34359820170476524
+    ],
+    "contact_width_m": 0.027681831739457596,
+    "layer_offset_m": 0.013840915869728798,
+    "layers": 3,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 15,
+    "key": "EDGE(chart0,beta6)",
+    "x_dir": [
+     -1.4323707964829556e-16,
+     -0.006455780378275143,
+     0.9999791612327267
+    ],
+    "contact_width_m": 0.01847384984488326,
+    "layer_offset_m": 0.00923692492244163,
+    "layers": 6,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 16,
+    "key": "EDGE(chart1,beta0)",
+    "x_dir": [
+     -0.00029132684761561513,
+     5.706795693527126e-17,
+     0.999999957564333
+    ],
+    "contact_width_m": 0.008882532297172924,
+    "layer_offset_m": 0.004441266148586462,
+    "layers": 11,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 17,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     4.659251847703684e-17,
+     -0.0001782200850587403,
+     -0.9999999841188005
+    ],
+    "contact_width_m": 0.008083328552473346,
+    "layer_offset_m": 0.004041664276236673,
+    "layers": 4,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 18,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     4.0042468741061225e-17,
+     0.0003922856097133185,
+     -0.9999999230559973
+    ],
+    "contact_width_m": 0.0052894084636586625,
+    "layer_offset_m": 0.0026447042318293312,
+    "layers": 3,
+    "probes": 4,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 19,
+    "key": "EDGE(chart0,beta1)",
+    "x_dir": [
+     -0.3543599744972119,
+     0.3570137422736772,
+     -0.8642743755903443
+    ],
+    "contact_width_m": 0.01223536140388748,
+    "layer_offset_m": 0.00611768070194374,
+    "layers": 2,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 20,
+    "key": "EDGE(chart0,beta1)",
+    "x_dir": [
+     -0.2719253819602975,
+     0.678678478701619,
+     0.6822405068544393
+    ],
+    "contact_width_m": 0.010255269035719217,
+    "layer_offset_m": 0.005127634517859608,
+    "layers": 6,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 21,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     4.874725233162793e-17,
+     0.001169789675254264,
+     -0.9999993157958238
+    ],
+    "contact_width_m": 0.006413737479411041,
+    "layer_offset_m": 0.0032068687397055207,
+    "layers": 4,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 22,
+    "key": "EDGE(chart0,beta6)",
+    "x_dir": [
+     -1.7917927412710186e-16,
+     -0.004242417197208984,
+     0.9999910009076706
+    ],
+    "contact_width_m": 0.004,
+    "layer_offset_m": 0.002,
+    "layers": 4,
+    "probes": 0,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 23,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     -0.4479389379071417,
+     6.743188001495055e-17,
+     0.8940641520084684
+    ],
+    "contact_width_m": 0.03210943608007688,
+    "layer_offset_m": 0.01605471804003844,
+    "layers": 8,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 24,
+    "key": "EDGE(chart1,beta9)",
+    "x_dir": [
+     0.5982731265489349,
+     -0.19255130088714176,
+     0.7778131283129847
+    ],
+    "contact_width_m": 0.004,
+    "layer_offset_m": 0.002,
+    "layers": 6,
+    "probes": 2,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 25,
+    "key": "EDGE(chart0,beta1)",
+    "x_dir": [
+     -0.28708598674785774,
+     0.9454743743591748,
+     0.153817566107178
+    ],
+    "contact_width_m": 0.009365869979856112,
+    "layer_offset_m": 0.004682934989928056,
+    "layers": 2,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 26,
+    "key": "EDGE(chart0,beta8)",
+    "x_dir": [
+     0.4749359996481258,
+     -0.6764408929499718,
+     -0.5629063106621564
+    ],
+    "contact_width_m": 0.004,
+    "layer_offset_m": 0.002,
+    "layers": 2,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 27,
+    "key": "EDGE(chart0,beta8)",
+    "x_dir": [
+     0.5028953898665939,
+     0.2975831902590175,
+     0.8115050657427791
+    ],
+    "contact_width_m": 0.004,
+    "layer_offset_m": 0.002,
+    "layers": 5,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 28,
+    "key": "EDGE(chart1,beta9)",
+    "x_dir": [
+     -0.163990848679185,
+     0.9854021212228153,
+     -0.04571281044801779
+    ],
+    "contact_width_m": 0.007829507590850326,
+    "layer_offset_m": 0.003914753795425163,
+    "layers": 1,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 29,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     3.2304540294951615e-17,
+     0.3134127203129277,
+     0.9496170105606
+    ],
+    "contact_width_m": 0.009203911999411951,
+    "layer_offset_m": 0.004601955999705976,
+    "layers": 2,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 30,
+    "key": "EDGE(chart1,beta10)",
+    "x_dir": [
+     -0.05837889623060008,
+     0.8658509419689501,
+     0.496884343450645
+    ],
+    "contact_width_m": 0.004,
+    "layer_offset_m": 0.002,
+    "layers": 8,
+    "probes": 4,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 31,
+    "key": "EDGE(chart1,beta1)",
+    "x_dir": [
+     -0.27537556284097114,
+     0.231745155248737,
+     0.932985788963989
+    ],
+    "contact_width_m": 0.0056636680884567525,
+    "layer_offset_m": 0.0028318340442283763,
+    "layers": 2,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 32,
+    "key": "EDGE(chart0,beta11)",
+    "x_dir": [
+     0.26943592070911715,
+     0.688311153003405,
+     0.6735221164020923
+    ],
+    "contact_width_m": 0.010724110387279842,
+    "layer_offset_m": 0.005362055193639921,
+    "layers": 1,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 33,
+    "key": "EDGE(chart0,beta0)",
+    "x_dir": [
+     5.923048617482443e-17,
+     0.9485707121195666,
+     0.3165653236047474
+    ],
+    "contact_width_m": 0.013604882593469717,
+    "layer_offset_m": 0.006802441296734858,
+    "layers": 2,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 34,
+    "key": "EDGE(chart0,beta11)",
+    "x_dir": [
+     0.2959111572047055,
+     -0.40336725579264004,
+     -0.8658703390208533
+    ],
+    "contact_width_m": 0.06136203461303351,
+    "layer_offset_m": 0.030681017306516754,
+    "layers": 7,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 35,
+    "key": "EDGE(chart0,beta6)",
+    "x_dir": [
+     -9.954599340168708e-17,
+     -0.0005392350667348109,
+     0.9999998546127609
+    ],
+    "contact_width_m": 0.01668262356992098,
+    "layer_offset_m": 0.00834131178496049,
+    "layers": 3,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 36,
+    "key": "EDGE(chart0,beta10)",
+    "x_dir": [
+     0.43896564955282896,
+     -0.7471448240938774,
+     -0.4990829293237667
+    ],
+    "contact_width_m": 0.013902086076478658,
+    "layer_offset_m": 0.006951043038239329,
+    "layers": 2,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   },
+   {
+    "region": 37,
+    "key": "EDGE(chart1,beta11)",
+    "x_dir": [
+     -0.12308386025928957,
+     0.4896119195547569,
+     0.8632094366801016
+    ],
+    "contact_width_m": 0.004,
+    "layer_offset_m": 0.002,
+    "layers": 10,
+    "probes": 5,
+    "direction_offset_deg": 90.0
+   }
+  ],
+  "limits": [
+   "강체 평판 디스크와 일정한 탄성 거리 가정(압력 분포·마모·속도 무시)",
+   "표본 간격 0.002 m 보다 작은 빈틈은 구분하지 못함",
+   "지나간 횟수만 센다. 체류 시간·압력·속도 차이(연마량)는 넣지 않음",
+   "coverage_credit = point: 각 점의 정지 자세 접촉 영역만 셈. 점 사이 이동 중 접촉으로 더 덮이는 넓이는 넣지 않음(line_model 참고)",
+   "coverage_credit = point: 같은 줄 이웃 점끼리 접촉 영역이 겹치는 것도 중첩으로 셈"
+  ],
+  "line_direction_offset_deg": [
+   90.0
+  ],
+  "gap_search": {
+   "points": 63,
+   "robot_evals": 180,
+   "tool_probes": 7575,
+   "given_up_samples": 181,
+   "radius_m": 0.05,
+   "coverage_of_regions_before": 0.9920495967394736,
+   "coverage_of_regions_after": 0.9948623747883242,
+   "eval_limit_reached": false,
+   "gap_fill_time_s": 37.845621256157756,
+   "time_s": 47.95274732634425
+  }
+ },
+ "final_points": {
+  "config": {
+   "elasticity_distance": {
+    "center": 0.0005,
+    "edge": 0.001
+   },
+   "coverage_sample_spacing": 0.002,
+   "placement": "uncovered_frontier",
+   "target_overlap": 0.0,
+   "line_step": 0.005,
+   "gap_fill_target": 1.0,
+   "gap_fill_max_points": 3000,
+   "gap_fill_radius": null,
+   "max_layers_per_region": 400,
+   "frontier_init_offset": null,
+   "frontier_iterations": 4,
+   "frontier_gap_tolerance": null,
+   "prune_loss_fraction": null,
+   "prune_max_coverage_loss": 0.02,
+   "prune_min_coverage": 0.955,
+   "status_grid_spacing": 0.01,
+   "coverage_credit": "point",
+   "independent_eval_seeds": [
+    101,
+    202
+   ],
+   "line_direction_offset_deg": 90,
+   "gap_search": {
+    "enabled": true,
+    "radius": null,
+    "max_candidates_per_gap": 12,
+    "max_tool_probes_per_gap": 40,
+    "max_robot_evals": 3000
+   }
+  },
+  "selection_tiers": {
+   "region_key": 2501,
+   "resplit": 330,
+   "None": 324
+  },
+  "resplit_regions": {
+   "1|CENTER": 38,
+   "1|EDGE(chart0,beta0)": 39,
+   "2|EDGE(chart0,beta1)": 40,
+   "4|EDGE(chart0,beta11)": 41,
+   "4|EDGE(chart1,beta5)": 42,
+   "4|EDGE(chart1,beta3)": 43,
+   "4|EDGE(chart1,beta11)": 44,
+   "4|EDGE(chart1,beta10)": 45,
+   "4|EDGE(chart0,beta0)": 46,
+   "4|EDGE(chart0,beta5)": 47,
+   "4|EDGE(chart1,beta2)": 48,
+   "6|CENTER": 49,
+   "6|EDGE(chart1,beta5)": 50,
+   "6|EDGE(chart1,beta6)": 51,
+   "7|EDGE(chart1,beta10)": 52,
+   "7|EDGE(chart1,beta7)": 53,
+   "7|EDGE(chart1,beta6)": 54,
+   "7|CENTER": 55,
+   "7|EDGE(chart1,beta0)": 56,
+   "7|EDGE(chart0,beta11)": 57,
+   "10|EDGE(chart1,beta11)": 58,
+   "10|EDGE(chart1,beta9)": 59,
+   "10|EDGE(chart1,beta3)": 60,
+   "11|EDGE(chart1,beta9)": 61,
+   "11|EDGE(chart1,beta10)": 62,
+   "13|EDGE(chart0,beta0)": 63,
+   "13|EDGE(chart0,beta2)": 64,
+   "13|EDGE(chart1,beta5)": 65,
+   "14|EDGE(chart0,beta0)": 66,
+   "14|EDGE(chart0,beta1)": 67,
+   "15|EDGE(chart0,beta0)": 68,
+   "15|EDGE(chart1,beta0)": 69,
+   "16|EDGE(chart0,beta2)": 70,
+   "16|EDGE(chart0,beta0)": 71,
+   "16|EDGE(chart0,beta5)": 72,
+   "16|EDGE(chart0,beta6)": 73,
+   "16|EDGE(chart0,beta1)": 74,
+   "16|EDGE(chart0,beta4)": 75,
+   "16|EDGE(chart0,beta9)": 76,
+   "16|EDGE(chart0,beta8)": 77,
+   "16|EDGE(chart0,beta7)": 78,
+   "16|CENTER": 79,
+   "16|EDGE(chart0,beta11)": 80,
+   "16|EDGE(chart0,beta3)": 81,
+   "16|EDGE(chart0,beta10)": 82,
+   "17|EDGE(chart1,beta6)": 83,
+   "19|EDGE(chart0,beta7)": 84,
+   "20|EDGE(chart0,beta2)": 85,
+   "20|EDGE(chart0,beta3)": 86,
+   "20|EDGE(chart1,beta1)": 87,
+   "21|EDGE(chart1,beta0)": 88,
+   "21|EDGE(chart1,beta10)": 89,
+   "21|CENTER": 90,
+   "21|EDGE(chart0,beta11)": 91,
+   "21|EDGE(chart1,beta1)": 92,
+   "21|EDGE(chart1,beta6)": 93,
+   "23|EDGE(chart1,beta10)": 94,
+   "23|EDGE(chart1,beta3)": 95,
+   "24|EDGE(chart0,beta4)": 96,
+   "26|EDGE(chart1,beta9)": 97,
+   "26|EDGE(chart0,beta0)": 98,
+   "26|EDGE(chart1,beta1)": 99,
+   "27|EDGE(chart1,beta1)": 100,
+   "29|EDGE(chart1,beta5)": 101,
+   "30|EDGE(chart0,beta0)": 102,
+   "30|EDGE(chart0,beta1)": 103,
+   "30|EDGE(chart0,beta10)": 104,
+   "30|EDGE(chart0,beta11)": 105,
+   "30|EDGE(chart0,beta7)": 106,
+   "30|EDGE(chart1,beta5)": 107,
+   "30|EDGE(chart1,beta7)": 108,
+   "30|EDGE(chart1,beta1)": 109,
+   "30|EDGE(chart1,beta0)": 110,
+   "30|EDGE(chart1,beta8)": 111,
+   "31|EDGE(chart0,beta9)": 112,
+   "31|EDGE(chart0,beta10)": 113,
+   "31|EDGE(chart0,beta1)": 114,
+   "32|EDGE(chart0,beta0)": 115,
+   "33|EDGE(chart1,beta4)": 116,
+   "34|CENTER": 117,
+   "35|EDGE(chart1,beta4)": 118,
+   "36|EDGE(chart1,beta3)": 119,
+   "36|EDGE(chart1,beta5)": 120,
+   "37|EDGE(chart1,beta0)": 121,
+   "37|EDGE(chart0,beta9)": 122,
+   "37|EDGE(chart0,beta10)": 123,
+   "24|EDGE(chart0,beta5)": 124,
+   "21|EDGE(chart0,beta6)": 125,
+   "7|EDGE(chart0,beta8)": 126,
+   "30|EDGE(chart0,beta8)": 127,
+   "34|EDGE(chart0,beta6)": 128,
+   "30|EDGE(chart1,beta4)": 129,
+   "30|EDGE(chart0,beta5)": 130,
+   "30|EDGE(chart1,beta3)": 131,
+   "16|EDGE(chart1,beta6)": 132,
+   "1|EDGE(chart1,beta8)": 133,
+   "1|EDGE(chart1,beta3)": 134,
+   "37|EDGE(chart1,beta5)": 135,
+   "1|EDGE(chart1,beta2)": 136,
+   "21|EDGE(chart0,beta1)": 137,
+   "1|EDGE(chart1,beta5)": 138,
+   "18|EDGE(chart0,beta10)": 139,
+   "28|EDGE(chart0,beta8)": 140,
+   "7|EDGE(chart0,beta6)": 141,
+   "30|EDGE(chart1,beta6)": 142,
+   "9|EDGE(chart0,beta5)": 143,
+   "5|CENTER": 144,
+   "30|CENTER": 145,
+   "6|EDGE(chart0,beta6)": 146,
+   "10|EDGE(chart0,beta6)": 147,
+   "1|EDGE(chart1,beta0)": 148,
+   "31|EDGE(chart0,beta8)": 149,
+   "1|EDGE(chart1,beta1)": 150,
+   "21|EDGE(chart0,beta5)": 151,
+   "17|EDGE(chart0,beta7)": 152
+  },
+  "time_s": 184.75937862787396,
+  "dense_samples": 35955,
+  "rechecked_points": 3385,
+  "inherited_status_points": 77,
+  "inherited_rule": "작업 가능 영역 밖 면의 점은 재분할 단계 면 상태(가장 가까운 평가 표본점의 전수 검사 결과)를 이어받음"
+ }
+}

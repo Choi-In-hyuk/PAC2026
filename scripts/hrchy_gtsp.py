@@ -72,7 +72,7 @@ class HrchyGTSP(SolverBase):
         self.poses_h = []
         # clustering = AffinityPropagation().fit(points)
         # clustering = AffinityPropagation( preference= - 2).fit(distance_matrix)
-        clustering = AffinityPropagation().fit(self.pose_distance_matrix)
+        clustering = AffinityPropagation(damping=0.9, max_iter=500, random_state=0).fit(self.pose_distance_matrix)
         self.clustered_pose_centers_indices = clustering.cluster_centers_indices_
 
         for i in self.clustered_pose_centers_indices:
@@ -229,7 +229,9 @@ class HrchyGTSP(SolverBase):
                 self.pose_i_to_ik_i[pose_i].append(len(self.ik_solutions)-1)
                 for j in self.clustered_pose_nearby_indices[pose_i_h]:
                     results = self.nearby_iks[i][j]
-                    # assert len(results) > 0, "Failed to find IK for pose: {}, ik: {}".format(pose, ik)
+                    if len(results) == 0:
+                        # fallback: skip unreachable cluster member — it will stay uncovered
+                        continue
                     self.ik_solutions.append(results)
                     self.ik_i_to_pose_i.append(j)
                     self.pose_i_to_ik_i[j].append(len(self.ik_solutions)-1)
@@ -285,7 +287,32 @@ class HrchyGTSP(SolverBase):
                     self.ik_i_h_to_pose_i.append(center_pose_i)
                     self.pose_i_h_to_ik_i_h[i].append(len(self.ik_solutions_h)-1)
 
-            assert len(self.pose_i_h_to_ik_i_h[i]) > 0, "Failed to find IK for pose: {}".format(pose)
+            if len(self.pose_i_h_to_ik_i_h[i]) == 0:
+                # Fallback: pick the IK that reaches the most (not all) cluster members.
+                best_ik, best_nearby, best_count = None, None, -1
+                for ik in centers:
+                    nearby_iks = {}
+                    count = 0
+                    for k in self.clustered_pose_nearby_indices[i]:
+                        results = self.robot.reach_with_relaxed_ik(
+                            self.poses[k], True, self.tolerances,
+                            start_config=ik, max_iter=100)
+                        nearby_iks[k] = results
+                        if len(results) > 0:
+                            count += 1
+                    if count > best_count:
+                        best_count, best_ik, best_nearby = count, ik, nearby_iks
+                if best_ik is not None:
+                    n_total = len(self.clustered_pose_nearby_indices[i])
+                    print(f"[warn] exemplar {i}: partial reach {best_count}/{n_total}, using fallback IK")
+                    self.ik_solutions_h.append(best_ik)
+                    self.propergated_ik_h.append(False)
+                    self.nearby_iks.append(best_nearby)
+                    self.ik_i_h_to_pose_i_h.append(i)
+                    self.ik_i_h_to_pose_i.append(center_pose_i)
+                    self.pose_i_h_to_ik_i_h[i].append(len(self.ik_solutions_h) - 1)
+                else:
+                    raise Exception("Failed to find any IK for exemplar {}".format(i))
         
     def solve(self, time_limit, num_samples):
         self.motions.start_time = time.time()

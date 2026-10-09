@@ -17,7 +17,10 @@ wrappers/__pycache__/
 
 scripts/__pycache__/
 
-motions/
+motions/*
+!motions/panda_full_dir0_v2_20261009_090106.csv
+!motions/panda_region_cover_dir0_20261008_222631.csv
+!motions/panda_baseline_dir0_20261008_222902.csv
 
 performance/
 
@@ -55,3 +58,18 @@ outputfile
 /GLKH/LKH-2.0.10/test_sparse.tour
 /GLKH/LKH-2.0.10/test_sparse.tsp
 /GLKH/LKH-2.0.10/test_sparse.log
+
+# python cache
+__pycache__/
+*.pyc
+
+# intermediate per-region surfaces (full pipeline generates them)
+surfaces/*region[0-9]*.csv
+surfaces/*test_region*.csv
+
+# logs
+*.log
+pipeline*.log
+
+# OS
+.DS_Store

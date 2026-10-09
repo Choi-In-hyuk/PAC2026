@@ -48,6 +48,8 @@ if __name__ == '__main__':
                 tolerances = [0., 0., 0., 0., 0., 999.]
             elif task == "floor":
                 tolerances = [0., 0., 0., 0., 0., 0.]
+            elif task == "cardoor":
+                tolerances = [0.03, 0.03, 0., 0., 0., 999.]
             else:
                 print("task not found")
             

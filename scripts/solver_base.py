@@ -127,7 +127,20 @@ class SolverBase:
 
             ds.append(d)
             num_reconfigs.append(num_reconfig)
-                
+
+        if len(ds) == 0:
+            # No motion found at all (likely time budget exhausted during IK sampling).
+            print("[warn] motion_performance: no low-level motion produced; reporting empty.")
+            self.motions.ds = [0.0]
+            self.motions.num_reconfigs = [0]
+            self.motions.best_idx = 0
+            self.motions.motions = [[]]
+            self.motions.c_paths = [[]]
+            self.motions.best_motion = []
+            self.motions.best_c_path = []
+            self.motions.n = 1
+            return
+
         ds.append(ds[-1])
         num_reconfigs.append(num_reconfigs[-1])
 
@@ -155,19 +168,27 @@ class SolverBase:
         self.num_ik_per_ee_pose = num_samples
         ik_solutions = []
         ik_i_to_pose_i = []
-        pose_i_to_ik_i = []
+        pose_i_to_ik_i = [[] for _ in range(len(poses))]  # pre-sized
+        skipped_poses = []
         for (pose_i, pose) in enumerate(poses):
             iks = []
+            pose_failed = False
             for _ in range(num_samples):
-                # print("Sampling for pose: ", pose)
                 ik = self.robot.reach_with_relaxed_ik(pose, False, tolerances = self.tolerances)
                 counter = 0
                 while len(ik) == 0:
                     ik = self.robot.reach_with_relaxed_ik(pose, False, tolerances = self.tolerances)
                     counter += 1
                     if counter > 100:
-                        raise Exception("Failed to find IK for pose: ", pose)
+                        pose_failed = True
+                        break
+                if pose_failed:
+                    break
                 iks.append(ik)
+            if pose_failed or len(iks) == 0:
+                skipped_poses.append(pose_i)
+                print(f"[warn] sample_iks: skip pose {pose_i} (no IK found)")
+                continue
             
             # cluster using DBSCAN
             ik_array = np.array(iks)
@@ -181,12 +202,13 @@ class SolverBase:
                     centers.append(ik_array[i])
                     uesd_labels.append(labels[i])
                 
-            pose_i_to_ik_i.append([])
             for center in centers:
                 ik_solutions.append(center)
                 ik_i_to_pose_i.append(pose_i)
                 pose_i_to_ik_i[pose_i].append(int(len(ik_solutions) - 1))
 
+        if skipped_poses:
+            print(f"[warn] sample_iks: skipped {len(skipped_poses)} / {len(poses)} poses")
         return ik_solutions, ik_i_to_pose_i, pose_i_to_ik_i
 
     def interpolate_ik(self, l_ik, r_ik, r):
@@ -304,7 +326,10 @@ class SolverBase:
         motion = motions.best_motion
         c_path = motions.best_c_path
 
-        assert len(motion) == len(c_path) 
+        if motion is None or len(motion) == 0:
+            print(f"[warn] save_motion({tag}): empty motion, skip saving CSV")
+            return
+        assert len(motion) == len(c_path)
 
         file_name = self.robot_name + "_" + tag + "_"+ datetime.now().strftime("%Y%m%d_%H%M%S") + ".csv"
 
@@ -379,8 +404,14 @@ class SolverBase:
             file.write("TYPE: GTSP\n")
             file.write("COMMENT: Nothing\n")
 
+            # Skip empty pose sets (waypoints with no IK candidate).
+            non_empty = [iks for iks in pose_i_to_ik_i if len(iks) > 0]
+            if len(non_empty) < len(pose_i_to_ik_i):
+                print(f"[warn] save_to_gtsplib: dropping {len(pose_i_to_ik_i)-len(non_empty)} "
+                      f"uncovered pose(s) from GTSP")
+
             n = len(ik_solutions) + 1
-            k = len(pose_i_to_ik_i) + 1
+            k = len(non_empty) + 1
             file.write("DIMENSION: {}\n".format(n))
             file.write("GTSP_SETS: {}\n".format(k))
             file.write("EDGE_DATA_FORMAT: EDGE_LIST\n")
@@ -391,12 +422,12 @@ class SolverBase:
                         file.write("{} {} {}\n".format(i+1, j+1, distance_matrix[i, j]))
 
             file.write("GTSP_SET_SECTION\n")
-            for i in range(len(pose_i_to_ik_i)):
-                row = "{} ".format(i+1)
-                for j in pose_i_to_ik_i[i]:
+            for new_i, iks in enumerate(non_empty):
+                row = "{} ".format(new_i+1)
+                for j in iks:
                     row += "{} ".format(j+1)
                 row += "-1\n"
                 file.write(row)
-            
+
             file.write("{} {} -1\n".format(k, n))
             file.write("EOF\n")
